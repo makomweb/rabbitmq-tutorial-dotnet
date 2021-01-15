@@ -1,12 +1,13 @@
 ﻿using System;
 using RabbitMQ.Client;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Send
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             Console.WriteLine("Starting sender.");
 
@@ -21,13 +22,28 @@ namespace Send
                                     arguments: null);
 
                 string message = "Hello World!";
-                var body = Encoding.UTF8.GetBytes(message);
+                var bytes = Encoding.UTF8.GetBytes(message);
 
                 channel.BasicPublish(exchange: "",
                                     routingKey: "hello",
                                     basicProperties: null,
-                                    body: body);
+                                    body: bytes);
                 Console.WriteLine(" [x] Sent {0}", message);
+
+                for(var i = 1; i < 20; i++)
+                {
+                    await Task.Delay(500);
+
+                    message = $"Hello {i}.";
+                    bytes = Encoding.UTF8.GetBytes(message);
+
+                    channel.BasicPublish(exchange: "",
+                                        routingKey: "hello",
+                                        basicProperties: null,
+                                        body: bytes);
+
+                    Console.WriteLine(" [x] Sent {0}", message);
+                }
             }
 
             Console.WriteLine(" Press [enter] to exit.");
